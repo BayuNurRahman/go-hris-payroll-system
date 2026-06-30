@@ -9,7 +9,7 @@ import (
 	authDelivery "hris-payroll/internal/auth/delivery"
 	authUsecase "hris-payroll/internal/auth/usecase"
 	"hris-payroll/internal/bootstrap"
-	"hris-payroll/middleware"
+	"hris-payroll/routes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -65,45 +65,13 @@ func main() {
 	lUsecase := leaveUsecase.NewLeaveUsecase(lRepo)
 	lHandler := leaveDelivery.NewLeaveHandler(lUsecase)
 
-	// 5. Inisialisasi Engine Gin
+	// 6. Inisialisasi Engine Gin
 	r := gin.Default()
 
-	// Routing Definition
-	api := r.Group("/api/v1")
-	{
-		// --- ENDPOINT PUBLIC / AUTHENTICATION ---
-		authGroup := api.Group("/auth")
-		{
-			authGroup.POST("/login", aHandler.LoginHandler)
-			authGroup.POST("/register", middleware.JWTAuth(db), middleware.RequireRole("HRD"), aHandler.RegisterHandler)
-			authGroup.POST("/logout", middleware.JWTAuth(db), aHandler.LogoutHandler)
-		}
+	// 7. Setup Routes
+	routes.SetupRoutes(r, db, aHandler, pHandler, lHandler)
 
-		// Payroll Routes (Dilindungi JWT & Hanya untuk HRD)
-		payrollGroup := api.Group("/payroll")
-		payrollGroup.Use(middleware.JWTAuth(db), middleware.RequireRole("HRD"))
-		{
-			payrollGroup.POST("/process", pHandler.ProcessPayrollHandler)
-		}
-
-		// Leave Routes (Butuh Login & Terbuka untuk Employee & HRD)
-		leaveGroup := api.Group("/leaves")
-		leaveGroup.Use(middleware.JWTAuth(db))
-		{
-			leaveGroup.POST("", lHandler.CreateLeaveHandler)
-			leaveGroup.GET("/:id", lHandler.GetLeaveDetailHandler)
-		}
-
-		api.GET("/ping", middleware.JWTAuth(db), func(c *gin.Context) {
-			role, _ := c.Get("user_role")
-			c.JSON(200, gin.H{
-				"message": "Anda berhasil menembus middleware keamanan!",
-				"role":    role,
-			})
-		})
-	}
-
-	// 6. Jalankan Server di Port 8080 (Berdasarkan .env)
+	// 8. Jalankan Server di Port 8080 (Berdasarkan .env)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

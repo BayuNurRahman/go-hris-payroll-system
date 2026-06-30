@@ -42,10 +42,12 @@ hris-payroll/
 ├── middleware/
 │   ├── auth_middleware.go    # Verifikasi JWT & blacklist token
 │   └── rbac_middleware.go    # Middleware RequireRole (HRD/EMPLOYEE)
+├── routes/
+│   └── routes.go             # Definisi routing utama aplikasi
 ├── internal/bootstrap/
 │   └── seed.go               # Seed data awal department dan user HRD
 ├── .env
-├── main.go                   # Routing utama dan dependency injection
+├── main.go                   # Bootstrap server, inisialisasi GORM, dan dependency injection
 └── plan.md                   # Catatan proyek dan checklist
 
 ## ✅ Fitur yang Harus Diimplementasi
@@ -85,6 +87,7 @@ hris-payroll/
 - Seed data sekarang memastikan department budget dibuat lebih dulu sebelum akun HRD dibuat, agar relasi foreign key tetap aman.
 - Department menggunakan ID eksplisit (1 untuk Engineering, 2 untuk HR) untuk menjaga konsistensi data awal.
 - Konfigurasi database saat startup mengacu pada file .env, termasuk port PostgreSQL yang digunakan.
+- Pemisahan definisi routing dari `main.go` ke dalam sub-package terpisah `routes/routes.go` untuk meningkatkan kebersihan dan kemudahan pemeliharaan struktur kode.
 
 ## ✅ Checklist Progress
 - [x] Struktur folder dibuat
